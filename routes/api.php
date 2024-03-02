@@ -17,3 +17,16 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::middleware('auth:sanctum')->group( function () {
+    Route::delete('logout',[\App\Http\Controllers\Api\AuthController::class,'logout'])->name('logout');
+    Route::get('users',[\App\Http\Controllers\Api\UserController::class,'index'])->name('user.index');
+    Route::get('feeds',[\App\Http\Controllers\Api\FeedController::class,'index'])->name('feeds');
+});
+
+Route::get('user/{token}',[\App\Http\Controllers\Api\AuthController::class,'verifyToken'])->name('verify-token');
+Route::post('register',[\App\Http\Controllers\Api\AuthController::class,'register'])->name('register');
+Route::post('login',[\App\Http\Controllers\Api\AuthController::class,'login'])->name('login');
+
+

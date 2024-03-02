@@ -1,7 +1,9 @@
 FROM php:8.2.12-apache
-# Mod Rewrite
+
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
-# Install system dependencies and PHP extensions
+
+# Install system dependencies, PHP, and PECL extensions
 RUN apt-get update -y && apt-get install -y \
     libicu-dev \
     libmariadb-dev \
@@ -11,24 +13,23 @@ RUN apt-get update -y && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
-    libpng-dev\
     && pecl install grpc \
     && docker-php-ext-enable grpc \
-# Install Node.js and npm
-RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN apt-get install nodejs npm -y
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gettext intl pdo_mysql gd
 
-# PHP Extension
-RUN docker-php-ext-install gettext intl pdo_mysql gd grpc
-
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd
+# Install Node.js
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs
 
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
-USER root
-# Copy the tinygram project files to the container
+
+# Copy the project files to the container
 COPY . .
+
 EXPOSE 6001
+
+USER root

@@ -10,6 +10,9 @@ use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
 
 
+/**
+ * @method spanBuilder(string $string)
+ */
 class BaseTracer
 {
     public static function getTracer(): \OpenTelemetry\API\Trace\TracerInterface

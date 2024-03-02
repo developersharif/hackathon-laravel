@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\OpenTelemetry\BaseTracer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,10 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
+            /** @var BaseTracer $tracer */
+            $tracer = BaseTracer::getTracer();
+            $span = $tracer->spanBuilder("Register User")->startSpan();
+            $spanScope = $span->activate();
 
             $user = new User();
             $user->name = $request->input('name');
@@ -39,7 +44,20 @@ class AuthController extends Controller
             $user->password = $request->input('password');
             $user->save();
 
+            $span->end();
+
+            $spanScope->detach();
+
+            /** @var BaseTracer $tracer */
+            $tracer = BaseTracer::getTracer();
+            $span = $tracer->spanBuilder("Crate Bearer Token")->startSpan();
+            $spanScope = $span->activate();
+
             $token = $user->createToken("API TOKEN")->plainTextToken;
+
+            $span->end();
+
+            $spanScope->detach();
 
             DB::commit();
 
@@ -79,6 +97,11 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            /** @var BaseTracer $tracer */
+            $tracer = BaseTracer::getTracer();
+            $span = $tracer->spanBuilder("Login user")->startSpan();
+            $spanScope = $span->activate();
+
             if (!Auth::attempt($request->only(['email', 'password']))) {
                 return response()->json([
                     'status' => false,
@@ -86,13 +109,31 @@ class AuthController extends Controller
                 ], 401);
             }
 
+
+            $span->end();
+
+            $spanScope->detach();
+
+
             $user = User::query()->where('email', $request->input('email'))->first();
+
+            /** @var BaseTracer $tracer */
+            $tracer = BaseTracer::getTracer();
+            $span = $tracer->spanBuilder("Crate Bearer Token")->startSpan();
+            $spanScope = $span->activate();
+
+
+            $token = $user->createToken("API TOKEN")->plainTextToken;
+
+            $span->end();
+
+            $spanScope->detach();
 
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
                 'user' => $user,
-                'token' => $user->createToken("API TOKEN")->plainTextToken
+                'token' => $token
             ], 200);
 
         } catch (\Exception $exception) {
@@ -107,9 +148,20 @@ class AuthController extends Controller
 
         try {
 
+            /** @var BaseTracer $tracer */
+            $tracer = BaseTracer::getTracer();
+            $span = $tracer->spanBuilder("Logout User")->startSpan();
+            $spanScope = $span->activate();
+
             /** @var User $user */
             $user = auth()->user();
             $user->tokens()->delete();
+
+            $span->end();
+
+            $spanScope->detach();
+
+
             return response()->json([
                 'status' => true,
                 'message' => 'User Logout Successfully',

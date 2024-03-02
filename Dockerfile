@@ -11,7 +11,6 @@ RUN apt-get update -y && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
-    grpc \
     libpng-dev
 # Install Node.js and npm
 RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
@@ -19,7 +18,7 @@ RUN bash nodesource_setup.sh
 RUN apt-get install nodejs npm -y
 
 # PHP Extension
-RUN docker-php-ext-install gettext intl pdo_mysql gd
+RUN docker-php-ext-install gettext intl pdo_mysql gd grpc
 
 RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd

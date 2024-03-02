@@ -11,6 +11,7 @@ RUN apt-get update -y && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    grpc \
     libpng-dev
 # Install Node.js and npm
 RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh

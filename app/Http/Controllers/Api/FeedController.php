@@ -19,7 +19,7 @@ class FeedController extends Controller
         $span->end();
 
         $spanScope->detach();
-        
+
         return response()->json(['feeds' => 'data']);
     }
 }

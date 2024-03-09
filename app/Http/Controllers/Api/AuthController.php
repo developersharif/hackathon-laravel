@@ -33,6 +33,7 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
+            
             /** @var BaseTracer $tracer */
             $tracer = BaseTracer::getTracer();
             $span = $tracer->spanBuilder("Register User")->startSpan();
